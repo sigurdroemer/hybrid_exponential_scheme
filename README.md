@@ -50,3 +50,7 @@ See the folder '.../get_started'.
 
 # Reference:
 - Rømer, S.E., Hybrid-exponential scheme for stochastic Volterra equations, ?
+- Belykin
+- Lifting heston
+- Multi-factor
+- BSS...
