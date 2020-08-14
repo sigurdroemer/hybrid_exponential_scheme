@@ -12,7 +12,8 @@ The project also contains code for approximating a given kernel function K(t) by
 See the folder '.../get_started' for scripts to help you get started.
  
 # Example
-[Simulate rough Bergomi] + show paths + paths of U factors
+![pic1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/volatility.jpg)
+![pic2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/u_factors.jpg)
 
 # Main reference:
 - Rømer, S.E., Hybrid-exponential scheme for stochastic Volterra equations, ?
