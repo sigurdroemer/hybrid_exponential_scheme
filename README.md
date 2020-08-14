@@ -1,5 +1,5 @@
 # Hybrid-exponential scheme for stochastic Volterra equations
-This project implements the hybrid-exponential scheme of (Rømer, ?) for simulating stochastic Volterra equations (SVE's). A SVE X(t) is here defined as
+This project implements the hybrid-exponential scheme of (Rømer, ?) for simulating a stochastic Volterra equation (SVE) X(t) of the form
 
 ![eqn1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/sve_def.png)
 
