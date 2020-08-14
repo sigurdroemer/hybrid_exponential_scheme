@@ -27,8 +27,6 @@ where U^j(t), j=1,...,m, are defined by
 
 With an efficient exponential approximation, i.e. low m, the scheme is the efficient as it only
 requires O(n*m) whereas a scheme computing the full convolution in general would require O(n^2) operations.
-
-See the folder '.../get_started' for scripts to help you get started.
  
 # Example
 As an example we simulate the rough Bergomi model defined by
@@ -40,6 +38,9 @@ Using the hybrid-exponential scheme with kappa = 1 to simulate the process V(t) 
 ![pic2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/u_factors.jpg)
 
 See the paper for pricing examples and a comparison with existing methods in terms of running times.
+
+# Getting started
+See the folder '.../get_started'.
 
 # Main reference:
 - Rømer, S.E., Hybrid-exponential scheme for stochastic Volterra equations, ?
