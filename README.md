@@ -39,5 +39,7 @@ Using the hybrid-exponential scheme with kappa = 1 to simulate the process V(t) 
 ![pic1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/volatility.jpg)
 ![pic2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/u_factors.jpg)
 
+See the paper for pricing examples and a comparison with existing methods in terms of running times.
+
 # Main reference:
 - Rømer, S.E., Hybrid-exponential scheme for stochastic Volterra equations, ?
