@@ -25,7 +25,7 @@ With the above, the approximation of X(t) then comes out to
 
 The hybrid-exponential scheme is then essentially defined by discretising the above expressions.
 
-With the sum of exponentials approximation one obtains a running time scaling linearly in the number of steps n, instead of quadraticly as one should in general expect for the computation of a convolution. Keeping m low, as one can do using e.g. (Beylkin and Monzon, 2005), the scheme will also be very efficient for practical values.
+With the sum of exponentials approximation one obtains a running time scaling linearly in the number of time steps, instead of quadraticly as one should in general expect for the computation of a convolution. Keeping m low, as one can do using e.g. the method of (Beylkin and Monzon, 2005), the scheme will also be very efficient for practical values.
  
 # Example
 As an illustration we simulate the rough Bergomi model used in Finance defined by
