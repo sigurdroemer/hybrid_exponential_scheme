@@ -103,6 +103,12 @@ function [iv,se] = GetPricesRoughBergomi(s0,y,q,xi,eta,rho,H,K,T,scheme,N,n,kapp
 %           scheme. Computed automatically if left empty (default), this is also the recommended
 %           choice.
 %
+%   conv_method:
+%           [1x1 logical or empty] Only applicable for scheme = 'HybridTBSS'. Specifies how the 
+%           convolution should be computed. Options are 'fft','conv2','conv_loop' and empty. See 
+%           function HybridTBSSScheme for more information. Uses an optimal choice if left empty
+%           (recommended).
+%
 % Output:
 %   iv: [Nx1 real] Black-Scholes implied volatilities.
 %   se: [Nx1 real] Standard errors (in volatility terms).
@@ -125,6 +131,7 @@ addParameter(p,'Z1',[]);
 addParameter(p,'Z2',[]);
 addParameter(p,'turbo',true);
 addParameter(p,'SIGMA',[]);
+addParameter(p,'conv_method',[]);
 parse(p,varargin{:});
 v2struct(p.Results);
 
@@ -193,7 +200,7 @@ end
 if strcmpi(scheme,'HybridTBSS')
     % Simulate the stochastic Volterra integral:
     [Y,~,dW1] = HybridTBSSScheme(N_indep,n,t_grid(end),sqrt(2*H)*eta,H-0.5,kappa,Z1,...
-                                [],[],'SIGMA',SIGMA);
+                                conv_method,[],[],SIGMA);
     
     % Compute the variance process:
     if ~turbo

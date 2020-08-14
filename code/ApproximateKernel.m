@@ -45,7 +45,7 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 %
 %               o 'AJ2019optim':
 %                       We use the method of (Abi Jaber, 2019) where the r_m parameter (denoted r_n
-%                       in that paper) is found by numerically minimizing the L2([0,T]) error. 
+%                       in that paper) is found by numerically minimizing the L2([delta,T]) error. 
 %                       Method assumes that K is a rough fractional kernel.
 %
 %               o 'l2optim':
@@ -54,9 +54,10 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 %
 %               o 'BM2005': 
 %                       Uses the method of (Beylkin and Monzon, 2005) to locate a (nearly) minimal
-%                       sum of exponentials approximation that approximately ensures a normalised 
-%                       l2-error below some specified level. The l2-error is here computed across
-%                       equidistant points in an interval of the form [delta,T].
+%                       sum of exponentials approximation that approximately ensures an error below 
+%                       some specified level. The error is computed across equidistant points in
+%                       in an interval of the form [delta,T]. The error can either be measured
+%                       as the normalised l2-error or as the relative uniform error.
 %
 % The remaining parameters must come in name-value pairs. Note that for a given method only some of
 % them are required/used. We list them all below:
@@ -76,17 +77,27 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 %               outputted number of terms may then be slightly smaller than the inputted 'm' value
 %               if fewer than m roots are found in (0,1] for the m'th eigenpair.
 %
-%   epsilon:    [1x1 real] The normalised l2-error tolerance for the method 'BM2005'. Must have 
-%               epsilon > 0. The algorithm will then attempt to find an efficient approximation 
-%               satisfying ||K(t)-K_hat(t)||_2/||K(t)||_2 <= epsilon where ||.||_2 denotes the 
-%               euclidian norm and t is a vector of sampled points. Cannot be used together
-%               with the 'm' parameter. If left empty and 'm' is left unspecified too then we 
-%               default to epsilon = 10^(-3).
+%   error_measure:
+%               [1x1 string] Only applies to the 'BM2005' method. Options are 'l2_normalised' and 
+%               'uniform_relative'. With the choice 'l2_normalised' we seek a minimal representation 
+%               that approximately ensures a normalised l2-error below 'epsilon'. With the choice 
+%               'uniform_relative' we iterate until instead the relative uniform error is below 
+%               'epsilon'. Parameter defaults to 'uniform_relative' if left unspecified.
+%
+%   epsilon:    [1x1 real] Only applies to the method 'BM2005'. Sets the error tolerance of the 
+%               approximation. If error_measure = 'l2_normalised' we therefore seek a minimal 
+%               representation ensuring ||K(t)-K_hat(t)||_2/||K(t)||_2 <= epsilon where ||.||_2 
+%               denotes the euclidian norm and t is a vector of sampled points. If instead 
+%               error_measure = 'uniform_relative' we seek a minimal representation ensuring 
+%               max(abs(K(t)-K_hat(t))./K(t)) <= epsilon. Parameter cannot be used together with 
+%               the 'm' parameter. If left empty and 'm' is left unspecified too then we default 
+%               to epsilon = 10^(-3) if error_measure = 'l2_normalised' and epsilon = 10^(-2)
+%               if error_measure = 'uniform_relative'.
 %
 %   n:          [1x1 integer] Only to be used by the methods 'l2optim' and 'BM2005'. Sets the number 
-%               of intervals to divide [delta,T] into to sample equidistant points. That is, n + 1 
-%               points will be sampled. Remark: If the method is 'BM2005' and n is odd then we 
-%               increment n by +1 to make it even.
+%               of intervals to divide [delta,T] into. A number n + 1 equidistant points will then 
+%               be sampled. Remark: If the method is 'BM2005' and n is odd then we increment n by 
+%               +1 to make it even.
 %
 %   T:          [1x1 real] The approximation is performed over the interval [delta,T] where 'delta' 
 %               is a parameter explained below. This parameter is required for all methods.
@@ -101,6 +112,17 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 %   gamm0:      [mx1 real] Initial guess on the exponents gamm for the method 'l2optim'. Can be 
 %               left empty in which case a default vector consisting of [0;0.1;0.2;...] is used.
 %
+%   mu:         [1x1 real] Only applies to the method 'BM2005' and only if the error_measure
+%               parameter is set to 'uniform_relative'. Parameter specifies an initial guess on 
+%               the normalised l2-error corresponding to a relative uniform error of epsilon. 
+%               Defaults to epsilon/10 if left unspecified.
+%
+%   weight_tol: [1x1 real] Only applies to the method 'BM2005'. Let f denote K transformed to the 
+%               domain [0,1] and let w_j, j=1,...,m, denote the weights of f (corresponding to
+%               the c_j's for K). We then remove all weights where abs(w_j) < f(0)*weight_tol. 
+%               Although, if all weights are deemed small per this inequality we do not remove the 
+%               largest weight. Set to 0 to disable. Defaults to epsilon/10^4 if left unspecified.
+%
 %   approx_roots: 
 %               [1x1 logical] Only used by the method 'BM2005'. If set to true then roots are found
 %               by sampling Nz equidistant points in [0,1] and then running a local optimizer in  
@@ -108,6 +130,11 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 %               'roots' function. Default is true if left unspecified.
 %
 %   Nz:         [1x1 integer] See the parameter 'approx_roots'. Default is 10^4 if left unspecified.
+%
+%   maxIter:    [1x1 logical] Only used by method 'BM2005' and only when the error measure is
+%               set to 'uniform_relative'. Specifies the maximum number of iterations to find
+%               a minimal representation ensuring a uniform relative error below epsilon.
+%               Default is 20. 
 %
 %   options:
 %               [1x1 struct] Options for fmincon optimizer when numerical optimization is used. 
@@ -133,6 +160,7 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 %   o Abi Jaber, E.: Lifting the Heston model. Quantitative Finance, 2019, 19(12), 1995-2013.
 %   o Beylkin, G., Monzon, L.: On approximation of functions by exponential sums. Applied and
 %     Computational Harmonic Analysis, 2005, 19(1), 17-48.
+%   o R?mer,...
 %
 
 % Parse name-value pair inputs:
@@ -150,6 +178,10 @@ addParameter(p,'disable_warn',false);
 addParameter(p,'gamm0',[]);
 addParameter(p,'Nz',[]);
 addParameter(p,'approx_roots',[]);
+addParameter(p,'weight_tol',[]);
+addParameter(p,'error_measure',[]);
+addParameter(p,'mu',[]);
+addParameter(p,'maxIter',[]);
 parse(p,varargin{:});
 v2struct(p.Results);
 
@@ -178,7 +210,8 @@ switch method
     case 'l2optim'
         [c,gamm,exitflag] = Optimizel2(K,T,m,delta,n,options,gamm0);
     case 'BM2005'
-        [c,gamm] = BeylkinMonzon2005(K,delta,T,ceil(n/2),epsilon,m,approx_roots,Nz);
+        [c,gamm,exitflag] = BeylkinMonzon2005(K,delta,T,ceil(n/2),epsilon,m,approx_roots,Nz,...
+                                              weight_tol,error_measure,mu,disable_warn,maxIter);
     otherwise
         error(['ApproximateKernel: Method ''', method, ''' is not supported.']);
 end
@@ -350,12 +383,43 @@ function c = LeastSquaresWeightsFromGammas(K_pts,pts,gamm)
     c = pinv(A)*K_pts.';
 end
 
-function [c,gamm] = BeylkinMonzon2005(fOrig,delta,b,N,epsilon,m,approx_roots,Nz)
+function [c,gamm,exitflag] = BeylkinMonzon2005(fOrig,delta,b,N,epsilon,m,approx_roots,Nz,...
+                                               weight_tol,error_measure,mu,disable_warn,maxIter)
 % Description: Implements the method of (Beylkin, 2005).
 
+% Initialize:
+[c,gamm,exitflag] = deal([]);
 if ~isempty(epsilon) && ~isempty(m)
     error(['ApproximateKernel:BeylkinMonzon2005: You cannot specify both ''epsilon'' and ''m''',...
           ' at the same time.']);
+end
+if isempty(N)
+    error('ApproximateKernel:BeylkinMonzon2005: You must specify the ''N'' parameter.');
+end
+if isempty(error_measure);error_measure='uniform_relative';end
+if isempty(epsilon)
+    if strcmpi(error_measure,'l2_normalised')
+        epsilon = 10^(-3);
+    else
+        epsilon = 10^(-2);
+    end
+end
+if isempty(approx_roots);approx_roots=true;end
+if isempty(Nz);Nz=10^4;end
+if isempty(mu);mu=epsilon/10;end
+if isempty(weight_tol);weight_tol=epsilon*10^(-4);end
+if isempty(maxIter);maxIter=20;end
+
+if ~isempty(m)
+    force_one_iteration = true;
+elseif strcmpi(error_measure,'l2_normalised')
+    force_one_iteration = true;
+    epsilon_l2 = epsilon;
+elseif strcmpi(error_measure,'uniform_relative')
+    force_one_iteration = false;
+    epsilon_l2 = mu;
+else
+    error('ApproximateKernel:BeylkinMonzon2005: Unsupported error measure.');
 end
 
 if ~isempty(m)
@@ -364,12 +428,6 @@ if ~isempty(m)
     end
     m_idx = m + 1;
 end
-
-% Initialize:
-[c,gamm] = deal([]);
-if isempty(epsilon);epsilon=10^(-3);end
-if isempty(approx_roots);approx_roots=true;end
-if isempty(Nz);Nz=10^4;end
 
 % Grid for approximative root-finding:
 if approx_roots
@@ -396,15 +454,14 @@ else
 end
 [V, Lambda, flag] = eigs(H,min(size(H,1),num_eigs_init));
 if flag ~= 0
-    warning(['ApproximateKernel:BeylkinMonzon2005: Function call to ''eigs'' failed with ',...
+    error(['ApproximateKernel:BeylkinMonzon2005: Function call to ''eigs'' failed with ',...
              'flag = ', num2str(flag),'.']);
-    return;
 end
 [sigmas,ind] = sort(max(diag(Lambda),0),'descend');
 
 if isempty(m)
     % Guess the optimal m:
-    m_idx = find(sigmas./h_norm <= epsilon,1);
+    m_idx = find(sigmas./h_norm <= epsilon_l2,1);
     m = m_idx - 1;
 end
 
@@ -418,7 +475,7 @@ if isempty(m)
     [sigmas,ind] = sort(max(diag(Lambda),0),'descend');
 
     % Guess again the optimal m:
-    m_idx = find(sigmas./h_norm <= epsilon,1);
+    m_idx = find(sigmas./h_norm <= epsilon_l2,1);
     m = m_idx - 1;
     
     if isempty(m)
@@ -427,53 +484,160 @@ if isempty(m)
     end
 end
 
-% Find roots:
-u = flipud(V(:,ind(m_idx)));
-if ~approx_roots
-    gamm_ = roots(u);
+% Iterate to find the minimal solution:
+solution_found = false;
+first_iter = true;
+iter = 1;
+while ~solution_found    
+    % Find roots:
+    u = flipud(V(:,ind(m_idx)));
+    if ~approx_roots
+        gamm_ = roots(u);
 
-else
-    y = polyval(u,z_grid);
-    pos = y > 0;
-    sign_change = find(pos(1:end-1)~=pos(2:end));
+    else
+        y = polyval(u,z_grid);
+        pos = y > 0;
+        sign_change = find(pos(1:end-1)~=pos(2:end));
 
-    if isempty(sign_change)
-        gamm_ = [];
+        if isempty(sign_change)
+            gamm_ = [];
 
-    else        
-        % Loop and locate roots:
-        gamm_ = zeros(size(sign_change));
-        fun = @(xIn)(polyval(u,xIn));
-        for i=1:size(sign_change,1)
-            [gamm_(i),~,exitflag] = fzero(fun,[z_grid(sign_change(i)),z_grid(sign_change(i)+1)]);
-            if exitflag <= 0
-                error(['ApproximateKernel:BeylkinMonzon2005: Root finding failed with ',...
-                        'exitflag = ', num2str(exitflag),'.']);
+        else        
+            % Loop and locate roots:
+            gamm_ = zeros(size(sign_change));
+            fun = @(xIn)(polyval(u,xIn));
+            for i=1:size(sign_change,1)
+                [gamm_(i),~,exitflag] = fzero(fun,[z_grid(sign_change(i)),...
+                                                   z_grid(sign_change(i)+1)]);
+                if exitflag <= 0
+                    error(['ApproximateKernel:BeylkinMonzon2005: Root finding failed with ',...
+                            'exitflag = ', num2str(exitflag),'.']);
+                end
             end
+
         end
 
     end
+    gamm_ = unique(gamm_);
 
-end
-gamm_ = unique(gamm_);
-
-% Filter roots:
-if ~isempty(gamm_)
-    idxKeep = imag(gamm_) == 0 & real(gamm_) >= 0 & real(gamm_) <= 1;
-    gamm_ = gamm_(idxKeep);
+    % Filter roots:
     if ~isempty(gamm_)
-        gamm_ = sort(gamm_,'descend');
-        gamm_ = gamm_(1:min(m,size(gamm_,1)));
+        idxKeep = imag(gamm_) == 0 & real(gamm_) >= 0 & real(gamm_) <= 1;
+        gamm_ = gamm_(idxKeep);
+        if ~isempty(gamm_)
+            gamm_ = sort(gamm_,'descend');
+            gamm_ = gamm_(1:min(m,size(gamm_,1)));
+        end
     end
-end
 
-if isempty(gamm_)
-    gamm_ = 1;
-end
+    if isempty(gamm_)
+        gamm_ = 1;
+    end
 
-% Determine weights by least-squares minimization:
-A = (gamm_.').^ii;
-w = pinv(A)*h;
+    % Determine weights by least-squares minimization:
+    A = (gamm_.').^ii;
+    w = pinv(A)*h;
+    
+    % Remove insignificant weights:
+    idxRemove = abs(w) < f(0).*weight_tol;
+    if any(idxRemove)
+        if sum(idxRemove) == size(w,1)
+            % Make sure at least one weight survives:
+            [~,idxMaxRemove] = max(abs(w));
+            idxRemove(idxMaxRemove) = false;
+        end
+        gamm_ = gamm_(~idxRemove);
+
+        % Re-do least squares minimization:
+        A = (gamm_.').^ii;
+        w = pinv(A)*h;
+
+    end    
+        
+    % Decide next step:
+    if force_one_iteration
+        % Stop with current solution:
+        solution_found = true;
+        
+    else
+        % Check the error:
+        err = max(abs(h-A*w)./h);
+
+        if (first_iter && err > epsilon) || (err > epsilon && err_prev > epsilon)
+            % Here we attempt to increase m
+            if m < N+1
+                 m = m + 1;
+                 m_idx = m_idx + 1;
+
+                % Check if we need to increase the number of eigenvalues and eigenvectors:
+                if m > size(V,2)
+                    % Find all eigenvalues and eigenvectors:
+                    [V,Lambda,flag] = eigs(H,size(H,1));
+                    [~,ind] = sort(max(diag(Lambda),0),'descend');
+                    if flag ~= 0
+                        error(['BeylkinMonzon2005: Function call to ''eigs'' failed with ',...
+                                 'flag = ', num2str(flag),'.']);
+                    end
+                end
+
+            else
+                exitflag = -1;
+                if ~disable_warn
+                    warning(['ApproximateKernel: BeylkinMonzon2005: Algorithm was ',...
+                             'unable to attain the desired precision.']);
+                end
+                return;
+
+            end
+
+        elseif (first_iter && err <= epsilon) || (err <= epsilon && err_prev <= epsilon)
+            % Here we attempt to decrease m
+            if m == 1
+                solution_found = true;
+            else
+                m = m - 1;
+                m_idx = m_idx - 1;
+            end
+
+        elseif err <= epsilon && err_prev > epsilon
+            % Here we stop with the current solution
+            solution_found = true;
+
+        elseif err > epsilon && err_prev <= epsilon
+            % Here we stop with the previous solution
+            solution_found = true;
+            gamm_ = gamm_prev;
+            w = w_prev;
+
+        end
+
+        first_iter = false;
+        
+        % Save solution of current iteration:
+        gamm_prev = gamm_;
+        w_prev = w;
+        err_prev = err;
+        
+    end
+    
+    iter = iter + 1;
+    
+    if iter > maxIter && ~solution_found
+        if err <= epsilon
+            solution_found = true;
+            
+        else
+            exitflag = -1;
+            if ~disable_warn
+               warning(['ApproximateKernel: BeylkinMonzon2005: Algorithm was unable to attain ',...
+                       'the desired precision within maxIter = ', num2str(maxIter),' iterations.']);
+            end
+            return;
+            
+        end
+    end
+
+end
         
 % Transform solution to the domain [delta,b]:
 t = 2*N*log(gamm_);

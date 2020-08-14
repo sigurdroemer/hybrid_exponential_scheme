@@ -209,7 +209,7 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %                               parameter is unspecified or empty then the fields t and t_truncated 
 %                               are equal.
 %
-%               o values:       [m x N x MU real] Simulated values of 
+%               o values:       [N x m x MU real] Simulated values of 
 %       
 %                                   U^j(t) =   int_0^t exp(-gamm_j*(t-s))b(s)ds 
 %                                            + int_0^t exp(-gamm_j*(t-s))sigma(s)dW(s)
@@ -269,7 +269,7 @@ end
 if ~isempty(tX)
     if any(diff(tX) <= 0)
         error(['HybridExponentialScheme: The values of the ''tX'' vector must be strictly',...
-               'increasing.']);
+               ' increasing.']);
     end
     if tX(1) < 0
         error('HybridExponentialScheme: Negative time points are not allowed.');
@@ -524,19 +524,20 @@ dummy2 = ConvertMatrix((1./(1+gamm*dt)),precision);
 %   order to handle the case where multiple requested time points (inputted via either the tX or 
 %   tU parameters) are truncated down to the same grid point. 
 X_stored_in_Xpaths = false;
-for i=1:(M-1+returnU*kappa)
+X = x0;
+for i=1:(M-1+returnU*kappa)    
     % Update drift and diffusion coefficients to the time point t_{i-1} = (i-1)/n:
     if b_is_function
         if X_stored_in_Xpaths
             % X-values from the last iteration was stored in the Xpaths struct:
-            b_mat(:,i) = b(t_grid(i),f_adj(Xpaths.values(:,idxXi(1))));
+            b_mat(:,i) = b(t_grid(i),f_adj(Xpaths.values(:,find(idxXi,1))));
         else
             b_mat(:,i) = b(t_grid(i),f_adj(X));
         end
     end
     if sigma_is_function
         if X_stored_in_Xpaths
-            sigma_mat(:,i) = sigma(t_grid(i),f_adj(Xpaths.values(:,idxXi(1))));
+            sigma_mat(:,i) = sigma(t_grid(i),f_adj(Xpaths.values(:,find(idxXi,1))));
         else
             sigma_mat(:,i) = sigma(t_grid(i),f_adj(X));
         end
@@ -564,79 +565,82 @@ for i=1:(M-1+returnU*kappa)
     
     end
     
-    % Check if we should store the value of X at time point t_i = i/n:
-    idxXi = ismember(idxX,i+1);
-    if ~any(idxXi) && ~b_is_function && ~sigma_is_function
-        % We do not compute and store the X value at all. Continue to the next iteration:
-        continue;
-    elseif ~any(idxXi) && (b_is_function || sigma_is_function)
-        % We compute and then store the value of the X-process in the 'X' object.
-        X_stored_in_Xpaths = false;
-    elseif any(idxXi)
-        % We compute and then store the value of the X-process in the 'Xpaths' object.
-        X_stored_in_Xpaths = true;
-    end
-    
-    % Compute and store the value of X at the time point t_i:
-    if kappa == 0
-        % Pure lifted model: We only use the U-factors:
-        if X_stored_in_Xpaths
-            Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(c.*U,2)),1,1,sum(idxXi));
-        else
-            X = f_adj(x0 + sum(c.*U,2));
+    % Update the X-process to the time point t_i:
+    if i <= M-1
+        % Check if we should store the value of X at time point t_i = i/n:
+        idxXi = ismember(idxX,i+1);
+        if ~any(idxXi) && ~b_is_function && ~sigma_is_function
+            % We do not compute and store the X value at all. Continue to the next iteration:
+            continue;
+        elseif ~any(idxXi) && (b_is_function || sigma_is_function)
+            % We compute and then store the value of the X-process in the 'X' object.
+            X_stored_in_Xpaths = false;
+        elseif any(idxXi)
+            % We compute and then store the value of the X-process in the 'Xpaths' object.
+            X_stored_in_Xpaths = true;
         end
-    else
-        % Compute sum involving sigma(t,x):
-        sigma_term = 0;
-        for k=1:min(kappa,i)
-            if ~sigma_is_constant
-                sigma_term = sigma_term + sigma_mat(:,i-k+1).*W_bold(:,i-k+1,1+k);
+
+        % Compute and store the value of X at the time point t_i:
+        if kappa == 0
+            % Pure lifted model: We only use the U-factors:
+            if X_stored_in_Xpaths
+                Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(c.*U,2)),1,1,sum(idxXi));
             else
-                sigma_term = sigma_term + sigma.*W_bold(:,i-k+1,1+k);
-            end
-        end
-        % Add all the parts together. 
-        % In general:  X(t) =   x0
-        %                     + weighted sum of U-factors 
-        %                     + sum involving b(t,x) values
-        %                     + sum involving sigma(t,x) values
-        % The U-factors are however absent for the first few iterations, see below.
-        if i <= kappa
-            % For the first few iterations the U-factors are not included:
-            if ~b_is_constant
-                if X_stored_in_Xpaths
-                    Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(b_mat(:,i-k+1).*w(k),2) ...
-                                                             + sigma_term),1,1,sum(idxXi));
-                else
-                    X = f_adj(x0 + sum(b_mat(:,i-k+1).*w(k),2) + sigma_term);
-                end
-            else
-                if X_stored_in_Xpaths
-                    Xpaths.values(:,idxXi) = repmat(f_adj(x0 + b.*sum(w(k),2) + sigma_term),...
-                                                    1,1,sum(idxXi));
-                else
-                    X = f_adj(x0 + b.*sum(w(k),2) + sigma_term);
-                end
+                X = f_adj(x0 + sum(c.*U,2));
             end
         else
-            % For the remaining iterations all terms are included:
-            weighted_Us = dummy1.*U; % Matrix to store a temporary result (for performance)
-            if ~b_is_constant
-                if X_stored_in_Xpaths
-                    Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(weighted_Us,2) ...
-                                                             + sum(b_mat(:,i-k+1).*w(k),2)...
-                                                             + sigma_term),1,1,sum(idxXi));
+            % Compute sum involving sigma(t,x):
+            sigma_term = 0;
+            for k=1:min(kappa,i)
+                if ~sigma_is_constant
+                    sigma_term = sigma_term + sigma_mat(:,i-k+1).*W_bold(:,i-k+1,1+k);
                 else
-                    X = f_adj(x0 + sum(weighted_Us,2) + sum(b_mat(:,i-k+1).*w(k),2)...
-                                                      + sigma_term);
+                    sigma_term = sigma_term + sigma.*W_bold(:,i-k+1,1+k);
+                end
+            end
+            % Add all the parts together. 
+            % In general:  X(t) =   x0
+            %                     + weighted sum of U-factors 
+            %                     + sum involving b(t,x) values
+            %                     + sum involving sigma(t,x) values
+            % The U-factors are however absent for the first few iterations, see below.
+            if i <= kappa
+                % For the first few iterations the U-factors are not included:
+                if ~b_is_constant
+                    if X_stored_in_Xpaths
+                        Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(b_mat(:,i-k+1).*w(k),2) ...
+                                                                 + sigma_term),1,1,sum(idxXi));
+                    else
+                        X = f_adj(x0 + sum(b_mat(:,i-k+1).*w(k),2) + sigma_term);
+                    end
+                else
+                    if X_stored_in_Xpaths
+                        Xpaths.values(:,idxXi) = repmat(f_adj(x0 + b.*sum(w(k),2) + sigma_term),...
+                                                        1,1,sum(idxXi));
+                    else
+                        X = f_adj(x0 + b.*sum(w(k),2) + sigma_term);
+                    end
                 end
             else
-                if X_stored_in_Xpaths
-                    Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(weighted_Us,2) ...
-                                                             + b.*sum(w(k),2) ...
-                                                             + sigma_term),1,1,sum(idxXi));
+                % For the remaining iterations all terms are included:
+                weighted_Us = dummy1.*U; % Matrix to store a temporary result (for performance)
+                if ~b_is_constant
+                    if X_stored_in_Xpaths
+                        Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(weighted_Us,2) ...
+                                                                 + sum(b_mat(:,i-k+1).*w(k),2)...
+                                                                 + sigma_term),1,1,sum(idxXi));
+                    else
+                        X = f_adj(x0 + sum(weighted_Us,2) + sum(b_mat(:,i-k+1).*w(k),2)...
+                                                          + sigma_term);
+                    end
                 else
-                    X = f_adj(x0 + sum(weighted_Us,2) + b.*sum(w(k),2) + sigma_term);
+                    if X_stored_in_Xpaths
+                        Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(weighted_Us,2) ...
+                                                                 + b.*sum(w(k),2) ...
+                                                                 + sigma_term),1,1,sum(idxXi));
+                    else
+                        X = f_adj(x0 + sum(weighted_Us,2) + b.*sum(w(k),2) + sigma_term);
+                    end
                 end
             end
         end
