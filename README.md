@@ -31,9 +31,11 @@ requires O(n*m) whereas a scheme computing the full convolution in general would
 Remark: The code is limited to one-dimensional SVE's where the kernel functions are the same for both the stochastic and non-stochastic integral as defined above. The scheme can be considered more generally, see the paper.
  
 # Example
-As an example we simulate the rough Bergomi model defined by
+As an example we simulate the rough Bergomi model from (x) defined by
 ...
 where ...
+
+[mention finance context]
 
 Using the hybrid-exponential scheme with kappa = 1 to simulate the process V(t) we get ... showing sqrt(V(t)) in the first plot (the volatility process) and the U^j(t), j=1,...,m, factors in the plot below that.
 ![pic1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/volatility.jpg)
