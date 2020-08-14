@@ -1,5 +1,5 @@
 # Hybrid-exponential scheme for stochastic Volterra equations
-This project implements the hybrid-exponential scheme of (Rømer, ?) for simulating stochastic Volterra equations (SVE's). The code is limited to one-dimensional SVE's where the kernel functions are the same for both the stochastic and non-stochastic integral. Thus define an SVE as
+This project implements the hybrid-exponential scheme of (Rømer, ?) for simulating stochastic Volterra equations (SVE's). Thus define an SVE as
 
 ...as
 
@@ -17,9 +17,9 @@ step size. In case K behaves like a rough fractional it is highly recommended to
 singularity properly. To approximate K(t) on [kappa*\Delta,T] for some T > 0 one can the choose the
 coefficients (c_j,\gamma_j)_{j=1}^m properly.
 
-The scheme then comes out to
+The approximation then comes out to
 
-X(t) = ...
+![eqn4](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/X_approx.png)
 
 where U^j(t), j=1,...,m, are defined by
 
@@ -27,6 +27,8 @@ where U^j(t), j=1,...,m, are defined by
 
 With an efficient exponential approximation, i.e. low m, the scheme is the efficient as it only
 requires O(n*m) whereas a scheme computing the full convolution in general would require O(n^2) operations.
+ 
+Remark: The code is limited to one-dimensional SVE's where the kernel functions are the same for both the stochastic and non-stochastic integral as defined above. The scheme can be considered more generally, see the paper.
  
 # Example
 As an example we simulate the rough Bergomi model defined by
