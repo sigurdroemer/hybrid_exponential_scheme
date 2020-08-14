@@ -15,11 +15,11 @@ The scheme works by approximating K as
 
 ![eqn2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/K_plot.jpg)
 
-The approximation of X(t) then comes out to
+With the above, the approximation of X(t) then comes out to
 
 ![eqn4](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/X_approx.png)
 
-where U^j(t), j=1,...,m, are defined by
+![eqn4](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/temp5.png)
 
 ![eqn3](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/dU.png)
 
