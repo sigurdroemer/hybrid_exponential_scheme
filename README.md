@@ -3,7 +3,7 @@ This project implements the hybrid-exponential scheme of (Rømer, ?) for simulat
 
 ...as
 
-X(t) = X(0) + \int_0^t K(t-s) b(s,X(s))ds + \int_0^t K(t-s) \sigma(s,X(s)) dW(s)
+![eqn1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/sve_def.png)
 
 where X(0) \in \mathbb{R}, K,b,\sigma are functions and W(t) is a Brownian motion. 
 We assume K is completely monotone.
