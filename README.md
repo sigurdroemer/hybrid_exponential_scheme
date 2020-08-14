@@ -10,7 +10,7 @@ We assume K is completely monotone.
 
 The scheme works by approximating K as 
 
-K(t) \approx 1_{} K(t) + \sum_{j=1}^m c_j e^{-\gamma_j t}
+![eqn2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/K_approx.png)
 
 where (c_j,\gamma_j)_{j=1}^m are coefficients, m \in \mathbb{N}, kappa \in \mathbb{N}_0 and \Delta > 0 a 
 step size. In case K behaves like a rough fractional it is highly recommended to put \kappa = 1 to capture the 
