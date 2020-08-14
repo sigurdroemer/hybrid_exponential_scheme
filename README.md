@@ -25,11 +25,7 @@ With the above, the approximation of X(t) then comes out to
 
 The hybrid-exponential scheme is then essentially defined by discretising the above expressions.
 
-With an efficient exponential approximation, i.e. low m, the scheme is the efficient as the running time is
-O(n*m) whereas a scheme computing the full convolution in general would require O(n^2) operations. 
-Talk kappa > 0 important to capture singularity efficiently?
- 
-Remark: The code is limited to one-dimensional SVE's where the kernel functions are the same for both the stochastic and non-stochastic integral as defined above. The scheme can be considered more generally, see the paper.
+With the exponential approximation one obtains a running time scaling linearly in the number of steps n, instead of quadraticly as one should in general expect for the computation of a convolution. Keeping m low, as one can do using e.g. (Beylkin and Monzon, 2005), the scheme will also be very efficient for practical values.
  
 # Example
 As an illustration we simulate the rough Bergomi model used in Finance defined by
