@@ -23,7 +23,7 @@ X(t) = ...
 
 where U^j(t), j=1,...,m, are defined by
 
-dU^j(t) = (b(t,X(t)) - \gamma_j)dt + \sigma(t,X(t))dW(t), U^j(0) = 0.
+![eqn3](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/dU.png)
 
 With an efficient exponential approximation, i.e. low m, the scheme is the efficient as it only
 requires O(n*m) whereas a scheme computing the full convolution in general would require O(n^2) operations.
