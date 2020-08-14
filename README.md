@@ -17,7 +17,7 @@ step size. In case K behaves like a rough fractional it is highly recommended to
 singularity properly. To approximate K(t) on [kappa*\Delta,T] for some T > 0 one can the choose the
 coefficients (c_j,\gamma_j)_{j=1}^m properly.
 
-![eqn2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/K_plot.png)
+![eqn2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/K_plot.jpg)
 
 The approximation then comes out to
 
