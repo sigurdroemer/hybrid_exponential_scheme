@@ -9,8 +9,9 @@ The scheme works by approximating K as
 
 ![eqn2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/K_approx.png)
 
-where (c_j,\gamma_j)_{j=1}^m are coefficients, m \in \mathbb{N}, kappa \in \mathbb{N}_0 and \Delta > 0 a 
-step size for the scheme. In case K behaves like a rough fractional having \kappa > 0 is needed to 
+![eqn2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/temp2.png)
+
+In case K behaves like a rough fractional having \kappa > 0 is needed to 
 efficiently capture the singularity. To approximate K(t) on [kappa*\Delta,T] for some T > 0 one can the choose the
 coefficients (c_j,\gamma_j)_{j=1}^m using e.g. the ideas of (Beylkin and Monzón, 2005). As an example we can 
 consider the kernel K(t) = t^{H-\frac{1}{2}}, t \geq 0, H \in (0,1/2) on the interval [1/1000,1]. Below we then run
