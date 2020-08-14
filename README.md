@@ -42,7 +42,8 @@ As an example we simulate the rough Bergomi model used in Finance defined by
 
 ![eqn3](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/rbergomi_params.png).
 
-Using the hybrid-exponential scheme with kappa = 1 to simulate the process V(t) we get ... showing sqrt(V(t)) in the first plot (the volatility process) and the U^j(t), j=1,...,m, factors in the plot below that.
+![eqn1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/temp3.png)
+
 ![pic1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/volatility.jpg)
 ![pic2](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/u_factors.jpg)
 
