@@ -28,14 +28,6 @@ dU^j(t) = (b(t,X(t)) - \gamma_j)dt + \sigma(t,X(t))dW(t), U^j(0) = 0.
 With an efficient exponential approximation, i.e. low m, the scheme is the efficient as it only
 requires O(n*m) whereas a scheme computing the full convolution in general would require O(n^2) operations.
 
-[EQUATION OF SVE]
-
-Explain SVE.
-
-Explain basics of scheme and U-factors?
-
-The project also contains code for approximating a given kernel function K(t) by a sum of exponential functions as in (x). 
-
 See the folder '.../get_started' for scripts to help you get started.
  
 # Example
