@@ -36,7 +36,7 @@ Talk kappa > 0 important to capture singularity efficiently?
 Remark: The code is limited to one-dimensional SVE's where the kernel functions are the same for both the stochastic and non-stochastic integral as defined above. The scheme can be considered more generally, see the paper.
  
 # Example
-As an example we simulate the rough Bergomi model used in Finance defined by
+As an illustration we simulate the rough Bergomi model used in Finance defined by
 
 ![eqn3](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/rbergomi.png)
 
