@@ -105,9 +105,8 @@ function [iv,se] = GetPricesRoughBergomi(s0,y,q,xi,eta,rho,H,K,T,scheme,N,n,kapp
 %
 %   conv_method:
 %           [1x1 logical or empty] Only applicable for scheme = 'HybridTBSS'. Specifies how the 
-%           convolution should be computed. Options are 'fft','conv2','conv_loop' and empty. See 
-%           function HybridTBSSScheme for more information. Uses an optimal choice if left empty
-%           (recommended).
+%           convolution should be computed. Options are 'fft' and 'conv_loop'. See the function
+%           HybridTBSSScheme for more information. Uses 'fft' if left empty.
 %
 % Output:
 %   iv: [Nx1 real] Black-Scholes implied volatilities.
@@ -275,7 +274,7 @@ if turbo
         alpha = -sum((X - mu_X).*diff_Y,1) ./ sum(diff_Y.^2,1);
         if any(isnan(alpha))
            alpha(isnan(alpha)) = 0;
-        end        
+        end 
 
         % Compute price estimates:
         Z = ZCB(idxT).'.*F(idxT).'.*(X + (Y_cv - 1).*alpha);

@@ -33,9 +33,8 @@ xlim([delta-0.05,T+0.05]);
 xlabel('t');ylabel('Value');
 legend();
 
-%% Simulate hybrid-exponential scheme:
+%% Simulate:
 N = 10;
-n = 500;
 x0 = 0;
 kappa = 1;
 b = 0;
@@ -64,7 +63,7 @@ xlabel('t');
 ylabel('Volatility');
 
 
-%% Compare pricing against hybrid-TBSS scheme:
+%% Compare pricing against the hybrid scheme for TBSS processes:
 % Additional inputs:
 s0 = 100;
 y = 0;
@@ -92,13 +91,13 @@ plot(log(strikes./s0),iv_1,'LineWidth',1.5,'Color','blue');hold on;
 plot(log(strikes./s0),iv_2,'--','LineWidth',1.5,'Color','red');
 xlabel('Log-moneyness');
 ylabel('Implied volatility');
-legend('Hybrid-Exponential scheme','Hybrid-TBSS scheme');
+legend('Hybrid-exponential scheme','Hybrid-TBSS scheme');
 
 figure;
 plot(log(strikes./s0),iv_1,'LineWidth',1.0,'Color','blue');hold on;
 plot(log(strikes./s0),iv_1-se_1*1.96,'--','LineWidth',0.5,'Color','red');
 plot(log(strikes./s0),iv_1+se_1*1.96,'--','LineWidth',0.5,'Color','red');
-legend('Hybrid-Exponential scheme','Confidence interval (95%)');
+legend('Hybrid-exponential scheme','Confidence interval (95%)');
 xlabel('Log-moneyness');
 ylabel('Implied volatility');
 

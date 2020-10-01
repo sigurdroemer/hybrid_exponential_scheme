@@ -1,2 +1,1 @@
-This code has been downloaded from https://github.com/sigurdroemer/rough_volatility/ 
-and then slightly modified.
+This code has been downloaded from https://github.com/sigurdroemer/rough_volatility/ and then slightly modified.

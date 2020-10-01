@@ -225,6 +225,8 @@ end
 
 % Construct approximation as function:
 if ~isempty(gamm) && ~isempty(c)
+    [gamm,idxSort] = sort(gamm,'descend');
+    c = c(idxSort);    
     K_hat = @(t)(sum(exp(-gamm'.*t).*c',2));
 else
     K_hat = [];

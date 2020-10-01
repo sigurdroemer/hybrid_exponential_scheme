@@ -37,13 +37,10 @@ function [Y,t,dW] = HybridTBSSScheme(N,n,T,sigma,alpha,kappa,Z,conv_method,W_bol
 %                 simulation. Can be left unspecified or empty in which case they are automatically 
 %                 simulated in the code.
 %
-%   conv_method:  [1x1 string or empty] Options are 'fft', 'conv2' and 'conv_loop'. If 'fft' is 
-%                 chosen we use the fast Fourier transform to compute the convolution. If 'conv2' 
-%                 is chosen we instead use Matlab's conv2 function. If left empty or unspecified 
-%                 (recommended) we use 'conv2' when the vectors to be convolved are smaller than 
-%                 1200 in length and otherwise use 'fft'. This was found experimentally to be the 
-%                 optimal choice (in terms of speed). The last choice 'conv_loop' computes the
-%                 convolution via an explicit loop in the time dimension (not recommended).
+%   conv_method:  [1x1 string or empty] Options are 'fft' and 'conv_loop'. If 'fft' is 
+%                 chosen we use the fast Fourier transform to compute the convolution. The choice 
+%                 'conv_loop' computes the convolution via an explicit loop in the time dimension 
+%                 (not recommended). The default is 'fft'.
 %
 %   W_bold:       [N x M - 1 x kappa + 1 real or empty] Random variables (Gaussian) to be 
 %                 used by the scheme after transforming. Cannot be used at the same time as the 
@@ -180,11 +177,7 @@ bk = ((ksUpper.^(alpha + 1) - (ksUpper - 1).^(alpha + 1))/(alpha + 1)).^(1/alpha
 weights = (bk/n).^(alpha);
 
 if isempty(conv_method)
-    if M-1-kappa < 1200
-        conv_method = 'conv2';
-    else
-        conv_method = 'fft';
-    end
+    conv_method = 'fft';
 end
 
 % Compute convolution:
@@ -192,9 +185,6 @@ if strcmpi(conv_method,'fft')
     n_elem = size(weights,2);
     n_padded = 2^nextpow2(2*n_elem-1);
     Y2 = ifft(fft(weights,n_padded).*fft(sigma.*dW(:,1:M-1-kappa),n_padded,2),[],2);        
-elseif strcmpi(conv_method,'conv2')
-    % Remark: Works faster if you transpose the problem (Matlab uses a column-major layout):
-    Y2 = conv2(weights.',sigma.*dW(:,1:M-1-kappa).','full').';
 elseif strcmpi(conv_method,'conv_loop')
     Y2 = zeros(N,M-1-kappa);
     weights = fliplr(weights);

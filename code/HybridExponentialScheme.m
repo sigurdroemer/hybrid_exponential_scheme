@@ -58,8 +58,8 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %
 %   sigma: [1x1 function, Nx(M-1) real or 1x1 real] As for the 'b' parameter but for sigma(t,x).
 %          See also the remark about positivity under 'b'.
-%   gamm:  [mx1 integer] Coefficients for the exponential approximation. See the main description.
-%   c:     [mx1 integer] Coefficients for the exponential approximation. See the main description.
+%   gamm:  [mx1 real] Coefficients for the exponential approximation. See the main description.
+%   c:     [mx1 real] Coefficients for the exponential approximation. See the main description.
 %   kappa: [1x1 integer] Number of sub-integrals to approximate exactly. Thus kappa = 0 
 %          corresponds to a pure exponential approximation of the kernel function.
 %
@@ -116,7 +116,7 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %                            U^j(t) =   int_0^t exp(-gamm_j*(t-s))b(s)ds 
 %                                     + int_0^t exp(-gamm_j*(t-s))sigma(s)dW(s)
 %
-%               for i = j,...,m.
+%               for j = 1,...,m.
 %
 %               The simulated values will be stored in the output variable 'Upaths'.
 %
@@ -221,7 +221,7 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %           is left empty.
 %
 % References:
-%   o ...
+%   o Roemer, S.E., The hybrid exponential scheme for stochastic Volterra equations, 2020.
 %   o Cheng, S.H., and Higham, N.J., A modified Cholesky algorithm based on a symmetric indefinite 
 %     factorization. SIAM Journal on Matrix Analysis and Applications, 1998, 19(4), 1097-1110.
 %
@@ -400,12 +400,8 @@ if idxX(1) == 1
     Xpaths.values(:,1) = x0;
 end
 
-% Here we store temporary values of the X process (if needed):
-if any(~ismember(idxX,(1:M).')) && (b_is_function || sigma_is_function)
-    X = x0*zeros(N,1,precision);
-else
-    X = [];
-end
+% Here we store temporary values of the X process:				   
+X = x0*ones(N,1,precision);
 
 % Initialize U-process:
 if returnU
@@ -446,11 +442,9 @@ if isempty(W_bold)
 
         % Check the pertubation matrix:
         E = SIGMA_pert - SIGMA;
-        max_pert = max(max(abs(E)));
         warning(['HybridExponentialScheme: The covariance matrix was not positive ',...
                  'definite. This could be due to numerical round off errors. Using ',...
-                 'modified Cholesky factorisation instead. The largest entry of the pertubation'...
-                 ' matrix is ', num2str(max_pert),'.']);
+                 'modified Cholesky factorisation instead.']);
 
         A = chol(SIGMA_pert, 'lower');
     end
@@ -524,7 +518,6 @@ dummy2 = ConvertMatrix((1./(1+gamm*dt)),precision);
 %   order to handle the case where multiple requested time points (inputted via either the tX or 
 %   tU parameters) are truncated down to the same grid point. 
 X_stored_in_Xpaths = false;
-X = x0;
 for i=1:(M-1+returnU*kappa)    
     % Update drift and diffusion coefficients to the time point t_{i-1} = (i-1)/n:
     if b_is_function
