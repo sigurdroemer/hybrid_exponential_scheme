@@ -1,2 +1,16 @@
-# hybrid_exponential_scheme
- 
+# Hybrid-exponential scheme for stochastic Volterra equations
+This project implements the hybrid-exponential scheme of (Rømer, ?) for simulating a stochastic Volterra equation (SVE) of the form
+
+![eqn1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/sve_def.png)
+
+![eqn1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/eqn123.png)
+
+To get started, see the example scripts in the folder '.../get_started'.
+
+# Reference:
+- Rømer, S.E., Hybrid-exponential scheme for stochastic Volterra equations, ?
+
+# External packages:
+- Adi Navve (2020). Pack & Unpack variables to & from structures with enhanced functionality (https://www.mathworks.com/matlabcentral/fileexchange/31532-pack-unpack-variables-to-from-structures-with-enhanced-functionality), MATLAB Central File Exchange. Retrieved March 16, 2020.
+- Sheung Hun Cheng and Nicholas J. Higham (2015). Modified-cholesky downloaded from https://github.com/higham/modified-cholesky on May 17th, 2020.
+- Sigurd Emil Rømer (2020). Rough volatility. Downloaded from https://github.com/sigurdroemer/rough_volatility on July 15th, 2020. Only a small number of auxiliary functions are included and the code has been slightly modified as well.
