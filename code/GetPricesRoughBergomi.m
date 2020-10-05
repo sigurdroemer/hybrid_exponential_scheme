@@ -108,6 +108,10 @@ function [iv,se] = GetPricesRoughBergomi(s0,y,q,xi,eta,rho,H,K,T,scheme,N,n,kapp
 %           convolution should be computed. Options are 'fft' and 'conv_loop'. See the function
 %           HybridTBSSScheme for more information. Uses 'fft' if left empty.
 %
+%   explicit:
+%           [1x1 logical or empty] Scheme for the U-factors when using the hybrid-exponential 
+%           scheme. Default is false. See the HybridExponentialScheme function for more information.
+%
 % Output:
 %   iv: [Nx1 real] Black-Scholes implied volatilities.
 %   se: [Nx1 real] Standard errors (in volatility terms).
@@ -131,6 +135,7 @@ addParameter(p,'Z2',[]);
 addParameter(p,'turbo',true);
 addParameter(p,'SIGMA',[]);
 addParameter(p,'conv_method',[]);
+addParameter(p,'explicit',false);
 parse(p,varargin{:});
 v2struct(p.Results);
 
@@ -223,7 +228,8 @@ elseif strcmpi(scheme,'HybridExponential')
     
     % Simulate the stochastic Volterra integral:
     [Y,~,dW1] = HybridExponentialScheme(N_indep,n,t_grid(end),0,0,sqrt(2*H)*eta,gamm,c,kappa,...
-                                       'Z',Z1,'returndW',true,'SIGMA',SIGMA,'w',w);
+                                       'Z',Z1,'returndW',true,'SIGMA',SIGMA,'w',w,'explicit',...
+                                       explicit);
     
     % Compute the variance process:
     if ~turbo

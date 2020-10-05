@@ -24,14 +24,14 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 % Parameters: The parameter 'method' below sets the method to be used.
 %   method: [1x1 string] The method for determining the (c,gamm) coefficients. Options:
 %           
-%               o 'AJEE2018': 
+%               o 'AJEE2019': 
 %                       We use the method of (Abi Jaber and El Euch, 2018) where the auxiliary mean
 %                       reversion terms, denoted 'eta' in the paper, are set equidistantly. The
 %                       spacing between the points is then chosen in a way that minimizes (an upper
 %                       bound estimate) of the L2([0,T]) error. Method assumes that K is a rough
 %                       fractional kernel.
 %
-%               o 'AJEE2018optim':
+%               o 'AJEE2019optim':
 %                       We use the method of (Abi Jaber and El Euch, 2018) where the auxiliary mean
 %                       reversion terms, denoted 'eta' in the paper, are numerically optimized 
 %                       (without further restrictions) to minimize (an upper bound estimate) of 
@@ -67,7 +67,7 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 %               parameter 'H' has instead been specified.
 %
 %   H:          [1x1 real] Fractional parameter. Must lie in the interval (0,1/2). Required for 
-%               methods 'AJEE2018', 'AJEE2018optim', 'AJ2019', 'AJ2019optim'.
+%               methods 'AJEE2019', 'AJEE2019optim', 'AJ2019', 'AJ2019optim'.
 %
 %   m:          [1x1 integer] Number of terms in the sum of exponentials approximation. 
 %
@@ -103,7 +103,7 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 %               is a parameter explained below. This parameter is required for all methods.
 %
 %   delta:      [1x1 real] Kernel function will be approximated on the interval [delta,T].
-%               Parameter is used by all other methods than 'AJEE2018', 'AJEE2018optim' and
+%               Parameter is used by all other methods than 'AJEE2019', 'AJEE2019optim' and
 %               'AJ2019'. Also, the methods 'l2optim' and 'BM2005' both require delta > 0.
 %
 %   rm:         [1x1 real] The r_m parameter from (Abi Jaber, 2019). Remark: m corresponds to n in
@@ -199,9 +199,9 @@ end
 
 exitflag = [];
 switch method
-    case 'AJEE2018'
+    case 'AJEE2019'
         [c,gamm] = AbiJaberElEuch2018(H,T,m,false,options);
-    case 'AJEE2018optim'
+    case 'AJEE2019optim'
         [c,gamm,exitflag] = AbiJaberElEuch2018(H,T,m,true,options);
     case 'AJ2019'
         [c,gamm,exitflag] = AbiJaber2019(H,T,m,rm,delta,'explicit',options);

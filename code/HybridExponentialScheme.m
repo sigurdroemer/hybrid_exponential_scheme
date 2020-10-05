@@ -181,6 +181,23 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %	positive:	[1x1 logical] If true we replace any negative simulated X-values by its positive
 %				part anywhere used in the scheme. Default is false.
 %
+%   explicit:   [1x1 logical] If true then we update the U-factors to a time point t_{i+1} as
+%
+%                   U^j(t_{i+1}) = U^j(t_i) + (b(t_i) - gamm_j*U^j(t_i))*dt 
+%                                           + sigma(t_i)*(W(t_{i+1}) - W(t_i)).
+%
+%               for j=1,...,m.
+%
+%               If false then we update them as
+%
+%                   U^j(t_{i+1}) = (1/(1+gamm_j*dt))( U^j(t_i) + b(t_i)*dt 
+%                                                              + sigma(t_i)*(W(t_{i+1})-W(t_i))
+%                                                    )
+%
+%               for j=1,...,m.
+%
+%               The default is false.
+%
 % Output:
 %   Xpaths: [1x1 struct] Simulated values of X(t). The struct has the following fields:
 %
@@ -239,6 +256,7 @@ addParameter(p,'precision','double',@(x) any(validatestring(x,{'single','double'
 addParameter(p,'Z',[]);
 addParameter(p,'W_bold',[]);
 addParameter(p,'positive',false);
+addParameter(p,'explicit',false);
 parse(p,varargin{:});
 v2struct(p.Results);
 
@@ -539,13 +557,30 @@ for i=1:(M-1+returnU*kappa)
     % Update the U-factors to the time point t_{i-kappa} = (i-kappa)/n:
     if i > kappa
         if ~b_is_constant && ~sigma_is_constant
-            U = dummy2.*(U + (b_mat(:,i-kappa).*dt + sigma_mat(:,i-kappa).*W_bold(:,i-kappa,1)));
+             if explicit
+                U = U.*(1 - gamm.*dt) + b_mat(:,i-kappa).*dt ...
+                    + sigma_mat(:,i-kappa).*W_bold(:,i-kappa,1);
+            else
+                U = dummy2.*(U + (b_mat(:,i-kappa).*dt + sigma_mat(:,i-kappa).*W_bold(:,i-kappa,1)));
+            end
         elseif b_is_constant && ~sigma_is_constant
-            U = dummy2.*(U + (b.*dt + sigma_mat(:,i-kappa).*W_bold(:,i-kappa,1)));
+            if explicit
+                U = U.*(1 - gamm.*dt) + b.*dt + sigma_mat(:,i-kappa).*W_bold(:,i-kappa,1);
+            else
+                U = dummy2.*(U + (b.*dt + sigma_mat(:,i-kappa).*W_bold(:,i-kappa,1)));
+            end
         elseif ~b_is_constant && sigma_is_constant
-            U = dummy2.*(U + (b_mat(:,i-kappa).*dt + sigma.*W_bold(:,i-kappa,1)));
+            if explicit
+                U = U.*(1 - gamm.*dt) + b_mat(:,i-kappa).*dt + sigma.*W_bold(:,i-kappa,1);
+            else
+                U = dummy2.*(U + (b_mat(:,i-kappa).*dt + sigma.*W_bold(:,i-kappa,1)));
+            end
         elseif b_is_constant && sigma_is_constant
-            U = dummy2.*(U + (b.*dt + sigma.*W_bold(:,i-kappa,1)));
+            if explicit
+                U = U.*(1 - gamm.*dt) + b.*dt + sigma.*W_bold(:,i-kappa,1);
+            else
+                U = dummy2.*(U + (b.*dt + sigma.*W_bold(:,i-kappa,1)));
+            end
         end
         
         if returnU
