@@ -8,7 +8,7 @@ This project implements the hybrid-exponential scheme of (Rømer, 2020) for simu
 To get started, see the example scripts in the folder '.../get_started'.
 
 # Reference:
-- Rømer, S.E.: The hybrid-exponential scheme for stochastic Volterra equations, 2020, Working paper available at ssrn.com/abstract=3706253.
+- Rømer, S.E.: The hybrid-exponential scheme for stochastic Volterra equations, 2020, Working paper available at www.ssrn.com/abstract=3706253.
 
 # External packages:
 - Adi Navve (2020). Pack & Unpack variables to & from structures with enhanced functionality (https://www.mathworks.com/matlabcentral/fileexchange/31532-pack-unpack-variables-to-from-structures-with-enhanced-functionality), MATLAB Central File Exchange. Retrieved March 16, 2020.
