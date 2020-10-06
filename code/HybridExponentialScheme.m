@@ -238,7 +238,8 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %           is left empty.
 %
 % References:
-%   o Roemer, S.E., The hybrid exponential scheme for stochastic Volterra equations, 2020.
+%   o Rømer, S.E.: The hybrid-exponential scheme for stochastic Volterra equations, 2020,
+%     Working paper available at ssrn.com/abstract=3706253.
 %   o Cheng, S.H., and Higham, N.J., A modified Cholesky algorithm based on a symmetric indefinite 
 %     factorization. SIAM Journal on Matrix Analysis and Applications, 1998, 19(4), 1097-1110.
 %
