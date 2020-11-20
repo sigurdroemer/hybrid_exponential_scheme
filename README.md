@@ -7,6 +7,9 @@ This project implements the hybrid-exponential scheme of (Rømer, 2020) for simu
 
 To get started, see the example scripts in the folder '.../get_started'.
 
+# Using this work for other projects
+If you decide to use this code in your research please cite this repository https://github.com/sigurdroemer/hybrid_exponential_scheme and the paper https://www.ssrn.com/abstract=3706253.
+
 # Reference:
 - Rømer, S.E.: The hybrid-exponential scheme for stochastic Volterra equations, 2020, Working paper available at www.ssrn.com/abstract=3706253.
 
