@@ -160,7 +160,7 @@ function [c,gamm,K,K_hat,exitflag] = ApproximateKernel(method,varargin)
 %   o Abi Jaber, E.: Lifting the Heston model. Quantitative Finance, 2019, 19(12), 1995-2013.
 %   o Beylkin, G., Monzon, L.: On approximation of functions by exponential sums. Applied and
 %     Computational Harmonic Analysis, 2005, 19(1), 17-48.
-%   o Rømer, S.E.: The hybrid-exponential scheme for stochastic Volterra equations, 2020,
+%   o Roemer, S.E.: The hybrid-exponential scheme for stochastic Volterra equations, 2020,
 %     Working paper available at ssrn.com/abstract=3706253.
 %	   
 %

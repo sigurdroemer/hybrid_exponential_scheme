@@ -6,20 +6,17 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 % where b(t) = b(t,X(t)) and sigma(t) = sigma(t,X(t)) are functions (or alternatively, 
 % pre-simulated processes) and W(t) is a Brownian motion.
 %
-% The function uses the hybrid-exponential scheme as presented in (Roemer, 2020) which combines 
-% exact simulation (up to approximating b(t) and sigma(t) piecewise constant) with an approximation 
-% of the kernel function K(t) by 
+% Function uses the hybrid-exponential scheme as presented in (Roemer, 2020). Here the K(t)
+% function is used exactly (i.e. without approximation) for a number of 'kappa' intervals near the 
+% origin and approximated by a sum of exponentials on the remainder of the domain. Specifically, 
+% letting 'dt' be the step size, we for t >= kappa*dt approximate
 % 
-%   K_hat(t) = sum_{i=1}^m c_i*exp(-gamm_i*t)
+%   K(t) approx(=) sum_{j=1}^m c_j*exp(-gamm_j*t)
 %
 % where c = (c_1,...,c_m)' and gamm = (gamm_1,...,gamm_m)' are appropriate coefficients.
 %
-% It is the user's responsibility to ensure that the model that it being simulated satisfies 
-% assumptions that ensure correct convergence of the scheme.
-%
 % Remarks: 
-%   o This function has been optimised for speed. The code may be less readable in some places 
-%     because of this.
+%   o Function has been optimised for speed. The code may thus be less readable in some places.
 %   o Some input parameters require knowing floor(n*T). In the code this is computed as 
 %           sum((0:1:floor(n*T)+1)/n <= T) - 1                                              (1)
 %    and not as
@@ -34,7 +31,7 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %          simulated on the M := floor(n*T) + 1 grid points stated below:
 %
 %               0 < 1/n < 2/n < ... < floor(n*T)/n.                                         (3)
-%
+% 
 %          The parameter can only be left empty if both the 'tX' and 'tU' parameters are instead 
 %          specified. See the description under 'Additional parameters' for an explanation of how  
 %          to use those parameters instead.
@@ -58,18 +55,20 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %
 %   sigma: [1x1 function, Nx(M-1) real or 1x1 real] As for the 'b' parameter but for sigma(t,x).
 %          See also the remark about positivity under 'b'.
-%   gamm:  [mx1 real] Coefficients for the exponential approximation. See the main description.
+%   gamm:  [mx1 real] Exponents for the exponential approximation. See the main description.
 %   c:     [mx1 real] Coefficients for the exponential approximation. See the main description.
-%   kappa: [1x1 integer] Number of sub-integrals to approximate exactly. Thus kappa = 0 
+%   kappa: [1x1 integer] Number of sub-integrals to approximate K exactly. Thus kappa = 0 
 %          corresponds to a pure exponential approximation of the kernel function.
 %
 % Additional parameters: 
 % Must be given in name-value pairs. Also, all parameters below are optional except for a few
 % special cases explained here:
 %
-%   o Either the 'K' parameter must be specified or both 'SIGMA' and 'w' must be specified. An 
-%     exception: the 'w' parameter is not required in any way if kappa = 0. Another exception: 
-%     The 'SIGMA' or 'K' parameters are not required if the 'W_bold' parameter is given instead.
+%   o Either the 'K' parameter must be specified or both 'SIGMA' and 'w' must be. 
+%     There are a few exceptions to this requirement:
+%       - When kappa = 0, neither of the variables 'K', 'SIGMA' and 'w' need to be specified.
+%       - When kappa > 0, 'K' is left empty and 'W_bold' is specified, then only 'w' need to be
+%         given as input ('SIGMA' need not be given).
 %     
 %   o If the 'T' parameter is left empty the 'tX' parameter must be set.
 %
@@ -107,11 +106,11 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %               numerical integration. In this case the 'K' parameter must be specified.
 %
 %   K:          [1x1 function] Kernel function. Must be vectorized. Only used if the 'SIGMA' 
-%               or 'w' parameter is left unspecified (or empty) in which case the SIGMA-matrix 
+%               or 'w' parameter are left unspecified (or empty) in which case the SIGMA-matrix 
 %               and/or w-vector will be computed by numerical integration. 
 %
 %   returnU:    [1x1 logical] This parameter should be set to true if the output should also 
-%               contain simulated values of the U-factors defined by
+%               contain simulated values of the U-factors defined as
 %       
 %                            U^j(t) =   int_0^t exp(-gamm_j*(t-s))b(s)ds 
 %                                     + int_0^t exp(-gamm_j*(t-s))sigma(s)dW(s)
@@ -124,12 +123,12 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %               left empty. If you do not need the U-factors it is recommended to keep 
 %               returnU = false for better performance.
 %
-%   returndW:   [1x1 logical] If true the output variable 'dW' is returned non-empty. If false (the
-%               default) the 'dW' variable is left empty. See also the description under 'outputs'.
-%               It is recommended (for performance) to leave returndW = false unless the output is 
+%   returndW:   [1x1 logical] If true, the output variable 'dW' is returned non-empty. If false 
+%               (default) it is left empty. See also the description under 'outputs'. It is 
+%               recommended (for performance) to leave returndW = false unless the output is 
 %               needed.
 %
-%   tX:         [1 x MX real] Parameter can only and is exactly required to be used if the 'T' 
+%   tX:         [1 x MX real] Parameter can only, and is exactly required to be used, if the 'T' 
 %               parameter is left empty. The 'tX' parameter sets which time points to return  
 %               simulated values of X(t) for. Together with the 'tU' parameter (possibly empty,  
 %               see also below) we overwrite T = max([tX,tU]) and then use the hybrid-exponential 
@@ -138,7 +137,7 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %               time-points down to the nearest grid point in (3) and return the simulated X-values 
 %               from those time points.
 %
-%               The vector must be sorted in ascending order and each value unique.
+%               The vector must be sorted in ascending order and values must be unique.
 %
 %               If this parameter is instead unspecified or left empty (in which case the 'T' 
 %               parameter is not) we instead return the X-values at the grid-points from (3).
@@ -153,7 +152,7 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %               parameter, we then truncate the 'tU' values down to the nearest grid point in (3) 
 %               and return the simulated values of the U-factors from those time points.
 %
-%               The vector must be sorted in ascending order and each value unique.
+%               The vector must be sorted in ascending order and values must be unique.
 %
 %               If this parameter is instead left unspecified or empty (and returnU = true) the 
 %               U-factors are returned at the grid points from (3).
@@ -162,14 +161,13 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %
 %   Z:          [(M-1)*N x (kappa+1) real] i.i.d. standard normals needed for the simulation. 
 %               Can be left unspecified or empty in which case they are automatically simulated in 
-%               the code. If the parameter is specified as non-empty the W_bold-parameter (see 
-%               below) must be unspecified (or empty). 
+%               the code. If this parameter is used the W_bold-parameter (see below) must be 
+%               left empty/unspecified.
 %
 %   W_bold:     [N x M-1 x kappa+1] Matrix containing the vectors in (4) and that for all the 
 %               M-1 relevant time points and all paths. Should be used with care to ensure paths  
-%               are simulated correctly. You can inspect the code for how to generate this matrix 
-%               correctly if needed. If the parameter is specified as non-empty the Z-parameter
-%               must be left unspecified (or empty).
+%               are simulated correctly. Inspect the code to see how to generate this matrix 
+%               correctly. Parameter cannot be used simultaneously with the 'Z' parameter.
 %
 %   precision:  [1x1 string] The precision to perform the computations in. Options are 'double' 
 %               and 'single'. Default is 'double'. To avoid unnecessary conversions it is 
@@ -181,14 +179,14 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %	positive:	[1x1 logical] If true we replace any negative simulated X-values by its positive
 %				part anywhere used in the scheme. Default is false.
 %
-%   explicit:   [1x1 logical] If true then we update the U-factors to a time point t_{i+1} as
+%   explicit:   [1x1 logical] If true, we update the U-factors to a time point t_{i+1} as
 %
 %                   U^j(t_{i+1}) = U^j(t_i) + (b(t_i) - gamm_j*U^j(t_i))*dt 
 %                                           + sigma(t_i)*(W(t_{i+1}) - W(t_i)).
 %
 %               for j=1,...,m.
 %
-%               If false then we update them as
+%               If false, we update them as
 %
 %                   U^j(t_{i+1}) = (1/(1+gamm_j*dt))( U^j(t_i) + b(t_i)*dt 
 %                                                              + sigma(t_i)*(W(t_{i+1})-W(t_i))
@@ -196,7 +194,7 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %
 %               for j=1,...,m.
 %
-%               The default is false.
+%               Default is false.
 %
 % Output:
 %   Xpaths: [1x1 struct] Simulated values of X(t). The struct has the following fields:
@@ -206,9 +204,9 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %                               shown in (3). Otherwise they are exactly the 'tX' time points.
 %
 %               o t_truncated:  [1 x MX real] Time points from which the corresponding values of X 
-%                               are obtained. Are the time points from the 't' field truncated down
-%                               to the nearest grid point. Note that if the 'tX' parameter is 
-%                               unspecified or empty then the fields t and t_truncated are equal.
+%                               are obtained. I.e. are the time points from the 't' field truncated 
+%                               down to the nearest grid point. Note that if the 'T' parameter is 
+%                               used, then fields t and t_truncated are equal.
 %
 %               o values:       [N x MX real] Simulated values of X(t).
 %
@@ -222,9 +220,8 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %
 %               o t_truncated:  [1 x MX real] Time points from which the corresponding values of  
 %                               the U-factors are obtained. Are the time points from the 't' field 
-%                               truncated down to the nearest grid point. Note that if the 'tU' 
-%                               parameter is unspecified or empty then the fields t and t_truncated 
-%                               are equal.
+%                               truncated down to the nearest grid point. Note that if the 'T' 
+%                               parameter is used, then fields t and t_truncated are equal.
 %
 %               o values:       [N x m x MU real] Simulated values of 
 %       
@@ -235,10 +232,10 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %
 %   dW:     [N x M-1 real or empty] If returndW = true this output contains the increments of the 
 %           underlying Brownian motion W(t) across the grid points specified in (3). Otherwise it 
-%           is left empty.
+%           is left empty. 
 %
 % References:
-%   o Rømer, S.E.: The hybrid-exponential scheme for stochastic Volterra equations, 2020,
+%   o Roemer, S.E.: The hybrid-exponential scheme for stochastic Volterra equations, 2020,
 %     Working paper available at ssrn.com/abstract=3706253.
 %   o Cheng, S.H., and Higham, N.J., A modified Cholesky algorithm based on a symmetric indefinite 
 %     factorization. SIAM Journal on Matrix Analysis and Applications, 1998, 19(4), 1097-1110.
@@ -436,12 +433,16 @@ U = zeros(N,m,precision);
 if isempty(W_bold)
     % Get the covariance matrix SIGMA:
     if isempty(SIGMA)
-        if isempty(K)
-            error(['HybridExponentialScheme: When the covariance matrix SIGMA is not inputted ',...
-                   ' (and the W_bold parameter is unused) the kernel function K must be ',...
-                   'inputted instead.']);
+        if isempty(K) && kappa > 0
+            error(['HybridExponentialScheme: When the covariance matrix SIGMA is not inputted, ',...
+                   ' the W_bold parameter is unused, and kappa > 0, the kernel',...
+                   'function K must be inputted instead.']);
         end
-        SIGMA = ConvertMatrix(CovMatrixByNumericalIntegration(K,kappa,n),precision);
+        if kappa > 0
+            SIGMA = ConvertMatrix(CovMatrixByNumericalIntegration(K,kappa,n),precision);
+        else % kappa = 0
+            SIGMA = 1/n;
+        end
     else
         if size(SIGMA,1) ~= kappa + 1 || size(SIGMA,2) ~= kappa + 1
             error(['HybridExponentialScheme: The covariance matrix SIGMA must be of the size ',...
@@ -460,7 +461,6 @@ if isempty(W_bold)
         SIGMA_pert = P'*L*D*L'*P;
 
         % Check the pertubation matrix:
-        E = SIGMA_pert - SIGMA;
         warning(['HybridExponentialScheme: The covariance matrix was not positive ',...
                  'definite. This could be due to numerical round off errors. Using ',...
                  'modified Cholesky factorisation instead.']);
@@ -499,7 +499,7 @@ elseif sigma_is_mat
 end
 
 % Get the w-vector:
-if kappa > 0 && ~isempty(b)
+if kappa > 0
     if isempty(w)
         if isempty(K)
             error(['HybridExponentialScheme: When the w-vector is not inputted ',...
@@ -527,9 +527,9 @@ dummy2 = ConvertMatrix((1./(1+gamm*dt)),precision);
 % o We use the logical variable 'X_stored_in_Xpaths' to avoid copying/storing values of the X 
 %   process unnecessarily. The code thus branches depending on whether the current iteration's  
 %   X-values should be stored in the 'Xpaths' struct or the 'X' variable (or not at all).
-% o In the first i=1,...,M-1 iterations we update U at t_(i-kappa} = (i-kappa)/n and X at 
-%   t_{i} = i/n. Note there that t_{M-1} = floor(n*T)/n is the last time point in the 
-%   discretisation and thus these iterations allow us to obtain X at any points in the 
+% o In the first i=1,...,M-1 iterations we update U at t_(i-kappa} = (i-kappa)/n (when i > kappa)
+%   and X at t_{i} = i/n. Note there that t_{M-1} = floor(n*T)/n is the last time point in the 
+%   discretisation and thus these iterations allow us to obtain 'X' at any points in the 
 %   discretisation. However, note also that these iterations only compute the U-factors at time 
 %   points up to t_{floor(n*T)-kappa}. Thus, if returnU = true, we add another kappa iterations 
 %   to compute U at the last few time points.
@@ -539,26 +539,28 @@ dummy2 = ConvertMatrix((1./(1+gamm*dt)),precision);
 X_stored_in_Xpaths = false;
 for i=1:(M-1+returnU*kappa)    
     % Update drift and diffusion coefficients to the time point t_{i-1} = (i-1)/n:
-    if b_is_function
-        if X_stored_in_Xpaths
-            % X-values from the last iteration was stored in the Xpaths struct:
-            b_mat(:,i) = b(t_grid(i),f_adj(Xpaths.values(:,find(idxXi,1))));
-        else
-            b_mat(:,i) = b(t_grid(i),f_adj(X));
+    if i <= M-1
+        if b_is_function
+            if X_stored_in_Xpaths
+                % X-values from the last iteration was stored in the Xpaths struct:
+                b_mat(:,i) = b(t_grid(i),f_adj(Xpaths.values(:,find(idxXi,1))));
+            else
+                b_mat(:,i) = b(t_grid(i),f_adj(X));
+            end
         end
-    end
-    if sigma_is_function
-        if X_stored_in_Xpaths
-            sigma_mat(:,i) = sigma(t_grid(i),f_adj(Xpaths.values(:,find(idxXi,1))));
-        else
-            sigma_mat(:,i) = sigma(t_grid(i),f_adj(X));
+        if sigma_is_function
+            if X_stored_in_Xpaths
+                sigma_mat(:,i) = sigma(t_grid(i),f_adj(Xpaths.values(:,find(idxXi,1))));
+            else
+                sigma_mat(:,i) = sigma(t_grid(i),f_adj(X));
+            end
         end
     end
     
     % Update the U-factors to the time point t_{i-kappa} = (i-kappa)/n:
     if i > kappa
         if ~b_is_constant && ~sigma_is_constant
-             if explicit
+            if explicit
                 U = U.*(1 - gamm.*dt) + b_mat(:,i-kappa).*dt ...
                     + sigma_mat(:,i-kappa).*W_bold(:,i-kappa,1);
             else
@@ -585,7 +587,7 @@ for i=1:(M-1+returnU*kappa)
         end
         
         if returnU
-            % Check if the newly simulated U-factors should be stored.
+            % Check if the newly simulated U-values should be stored.
             idxUi = ismember(idxU,i+1-kappa);
             if any(idxUi)
                 Upaths.values(:,:,idxUi) = repmat(U,1,1,sum(idxUi));
@@ -627,6 +629,7 @@ for i=1:(M-1+returnU*kappa)
                     sigma_term = sigma_term + sigma.*W_bold(:,i-k+1,1+k);
                 end
             end
+            kIdx = (1:min(kappa,i));
             % Add all the parts together. 
             % In general:  X(t) =   x0
             %                     + weighted sum of U-factors 
@@ -637,17 +640,19 @@ for i=1:(M-1+returnU*kappa)
                 % For the first few iterations the U-factors are not included:
                 if ~b_is_constant
                     if X_stored_in_Xpaths
-                        Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(b_mat(:,i-k+1).*w(k),2) ...
-                                                                 + sigma_term),1,1,sum(idxXi));
+                        Xpaths.values(:,idxXi) = repmat(f_adj(x0 ...
+                                                           + sum(b_mat(:,i-kIdx+1).*w(kIdx),2) ...
+                                                           + sigma_term),1,1,sum(idxXi));
                     else
-                        X = f_adj(x0 + sum(b_mat(:,i-k+1).*w(k),2) + sigma_term);
+                        X = f_adj(x0 + sum(b_mat(:,i-kIdx+1).*w(kIdx),2) + sigma_term);
                     end
                 else
                     if X_stored_in_Xpaths
-                        Xpaths.values(:,idxXi) = repmat(f_adj(x0 + b.*sum(w(k),2) + sigma_term),...
-                                                        1,1,sum(idxXi));
+                        Xpaths.values(:,idxXi) = repmat(f_adj(x0 + b.*sum(w(kIdx),2) ...
+                                                                 + sigma_term),...
+                                                                 1,1,sum(idxXi));
                     else
-                        X = f_adj(x0 + b.*sum(w(k),2) + sigma_term);
+                        X = f_adj(x0 + b.*sum(w(kIdx),2) + sigma_term);
                     end
                 end
             else
@@ -656,19 +661,19 @@ for i=1:(M-1+returnU*kappa)
                 if ~b_is_constant
                     if X_stored_in_Xpaths
                         Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(weighted_Us,2) ...
-                                                                 + sum(b_mat(:,i-k+1).*w(k),2)...
-                                                                 + sigma_term),1,1,sum(idxXi));
+                                                             + sum(b_mat(:,i-kIdx+1).*w(kIdx),2)...
+                                                             + sigma_term),1,1,sum(idxXi));
                     else
-                        X = f_adj(x0 + sum(weighted_Us,2) + sum(b_mat(:,i-k+1).*w(k),2)...
+                        X = f_adj(x0 + sum(weighted_Us,2) + sum(b_mat(:,i-kIdx+1).*w(kIdx),2)...
                                                           + sigma_term);
                     end
                 else
                     if X_stored_in_Xpaths
                         Xpaths.values(:,idxXi) = repmat(f_adj(x0 + sum(weighted_Us,2) ...
-                                                                 + b.*sum(w(k),2) ...
+                                                                 + b.*sum(w(kIdx),2) ...
                                                                  + sigma_term),1,1,sum(idxXi));
                     else
-                        X = f_adj(x0 + sum(weighted_Us,2) + b.*sum(w(k),2) + sigma_term);
+                        X = f_adj(x0 + sum(weighted_Us,2) + b.*sum(w(kIdx),2) + sigma_term);
                     end
                 end
             end

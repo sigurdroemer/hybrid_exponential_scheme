@@ -40,7 +40,7 @@ function [iv,se] = GetPricesRoughBergomi(s0,y,q,xi,eta,rho,H,K,T,scheme,N,n,kapp
 %
 %   scheme: [1x1 string]  Scheme specifying how to simulate the stochastic Volterra integral in 
 %           the V(t) process. Options are 'HybridTBSS', we use the scheme from (Bennedsen et al., 
-%           2017), and 'HybridExponential', we use the scheme from (Roemer, 2021).
+%           2017), and 'HybridExponential', we use the scheme from (Roemer, 2020).
 %
 %   N:      [1x1 integer] The number of paths to use in the Monte Carlo estimator. If turbo = true
 %           this includes N/2 antithetic paths. In that case we require N to be divisible by 2.
@@ -48,7 +48,7 @@ function [iv,se] = GetPricesRoughBergomi(s0,y,q,xi,eta,rho,H,K,T,scheme,N,n,kapp
 %   n:      [1x1 integer] The number of steps per year to simulate.
 %
 %   kappa:  [1x1 integer] Corresponds to the 'kappa' from (Bennedsen et al., 2017) and (Roemer,
-%           2021) depending on the scheme used.
+%           2020) depending on the scheme used.
 %   
 % Additional parameters (must come in name-value pairs):
 %   c:      [mx1 real] This parameter is only required if the 'HybridExponential' scheme is used.
@@ -123,7 +123,8 @@ function [iv,se] = GetPricesRoughBergomi(s0,y,q,xi,eta,rho,H,K,T,scheme,N,n,kapp
 %     procesess. Finance and Stochastics, 2017, 21(4), 931-965.
 %   o McCrickerd, R. and Pakkanen, M.S., Turbocharging Monte Carlo pricing for 
 %     the rough Bergomi model. Quantitative Finance, 2018, 18(11), 1877-1886.
-%   o Roemer, S.E., ...
+%   o Roemer, S.E., The hybrid-exponential scheme for stochastic Volterra equations, 2020,
+%     Working paper, available at https://www.ssrn.com/abstract=3706253.
 %
 
 % Parse name-value pair inputs:
