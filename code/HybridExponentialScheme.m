@@ -15,6 +15,9 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %
 % where c = (c_1,...,c_m)' and gamm = (gamm_1,...,gamm_m)' are appropriate coefficients.
 %
+% It is the user's responsibility to ensure that the model that is being simulated satisfies 
+% assumptions that ensure correct convergence of the scheme.
+%
 % Remarks: 
 %   o Function has been optimised for speed. The code may thus be less readable in some places.
 %   o Some input parameters require knowing floor(n*T). In the code this is computed as 
