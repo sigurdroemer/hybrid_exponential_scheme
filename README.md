@@ -15,6 +15,8 @@ If you decide to use this code in your research please cite this repository http
 
 # Updates:
 December 30, 2020: Fixed problem where time points in rare cases were incorrectly truncated down due to round off errors.
+
 December 27, 2020: Fixed error in computation of drift when kappa > 1.
+
 
 * The fixed bugs did not influence the results of the paper.
