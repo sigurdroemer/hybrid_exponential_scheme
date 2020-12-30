@@ -1,9 +1,5 @@
 # Hybrid-exponential scheme for stochastic Volterra equations
-This project implements the hybrid-exponential scheme of (Rømer, 2020) for simulating stochastic Volterra equations of the form
-
-![eqn1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/sve_def.png)
-
-![eqn1](https://github.com/sigurdroemer/hybrid_exponential_scheme/blob/readme_images/eqn123.png)
+This project implements the hybrid-exponential scheme of (Rømer, 2020) for simulating stochastic Volterra equations.
 
 To get started, see the example scripts in the folder '.../get_started'.
 
