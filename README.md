@@ -14,9 +14,7 @@ If you decide to use this code in your research please cite this repository http
 - Sigurd Emil Rømer (2020). Rough volatility. Downloaded from https://github.com/sigurdroemer/rough_volatility on July 15th, 2020. Only a small number of auxiliary functions are included and the code has been slightly modified as well.
 
 # Updates:
-December 30, 2020: Fixed problem where time points in rare cases were incorrectly truncated down due to round off errors.
+- December 30, 2020: Fixed problem where time points in rare cases were incorrectly truncated down due to round off errors.
+- December 27, 2020: Fixed error in computation of drift when kappa > 1.
 
-December 27, 2020: Fixed error in computation of drift when kappa > 1.
-
-
-* The fixed bugs did not influence the results of the paper.
+The fixed bugs did not influence the results of the paper.
