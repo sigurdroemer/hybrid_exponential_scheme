@@ -10,7 +10,7 @@ function [Y,t,dW] = HybridTBSSScheme(N,n,T,sigma,alpha,kappa,Z,conv_method,W_bol
 %
 % Remarks:
 %   o Some input parameters require knowing floor(n*T). In the code this is computed as 
-%           sum((0:1:floor(n*T)+1)/n <= T) - 1                                              (1)
+%           floor(n*T+eps(n*T))                                                             (1)
 %     and not as
 %           floor(n*T).                                                                     (2)
 %     This is to avoid round off errors. Whenever floor(n*T) is written here in the description
@@ -73,12 +73,8 @@ function [Y,t,dW] = HybridTBSSScheme(N,n,T,sigma,alpha,kappa,Z,conv_method,W_bol
 %     factorization. SIAM Journal on Matrix Analysis and Applications, 1998, 19(4), 1097-1110.
 %
 
-% General set-up:
-t_grid_temp = (0:1:floor(n*T)+1)/n;
-
 % The below computation avoids the round off errors that can arise using floor(n*T):
-floor_nT = sum(t_grid_temp <= T) - 1;
-
+floor_nT = floor(n*T+eps(n*T));
 t = (0:1:floor_nT)'/n;
 M = floor_nT + 1;
 

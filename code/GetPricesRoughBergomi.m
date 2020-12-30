@@ -71,7 +71,7 @@ function [iv,se] = GetPricesRoughBergomi(s0,y,q,xi,eta,rho,H,K,T,scheme,N,n,kapp
 %           Important remark: To avoid round-off errors one should compute the mathematical
 %           expression floor(n*max(T)) as
 %
-%               sum((0:1:floor(n*max(T))+1)/n <= max(T)) - 1
+%               floor(n*max(T)+eps(n*max(T))
 %
 %           in Matlab and not as
 %
@@ -146,11 +146,10 @@ maxT = max(uniqT);
 dt = 1/n;
 
 % Find grid point just below each expiration and define the grid points for the simulation:
-t_grid_temp = (0:1:floor(n*maxT)+1)/n;
-idxTadj = sum(T >= t_grid_temp,2);
+t_grid_temp = (0:1:floor(n*maxT+eps(n*maxT)))/n;
+idxTadj = sum(T >= t_grid_temp - eps(t_grid_temp),2);
 Tadj = t_grid_temp(idxTadj).';
 t_grid = t_grid_temp(1:max(idxTadj));
-
 floor_nmaxT = max(idxTadj) - 1;
 
 if isa(xi,'CurveClass')

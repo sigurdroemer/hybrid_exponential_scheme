@@ -101,3 +101,6 @@ legend('Hybrid-exponential scheme','Confidence interval (95%)');
 xlabel('Log-moneyness');
 ylabel('Implied volatility');
 
+
+
+

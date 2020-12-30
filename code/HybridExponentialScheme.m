@@ -15,13 +15,10 @@ function [Xpaths,Upaths,dW] = HybridExponentialScheme(N,n,T,x0,b,sigma,gamm,c,ka
 %
 % where c = (c_1,...,c_m)' and gamm = (gamm_1,...,gamm_m)' are appropriate coefficients.
 %
-% It is the user's responsibility to ensure that the model that is being simulated satisfies 
-% assumptions that ensure correct convergence of the scheme.
-%
 % Remarks: 
-%   o Function has been optimised for speed. The code may thus be less readable in some places.
+%   o Function has been optimised for speed. Code may thus be less readable in some places.
 %   o Some input parameters require knowing floor(n*T). In the code this is computed as 
-%           sum((0:1:floor(n*T)+1)/n <= T) - 1                                              (1)
+%           floor(n*T+eps(n*T))                                                             (1)
 %    and not as
 %           floor(n*T).                                                                     (2)
 %    This is to avoid round off errors. Whenever floor(n*T) is written here in the description
@@ -317,12 +314,11 @@ end
 % General set-up:
 m = size(gamm,1);
 dt = 1/n;
-t_grid_temp = (0:1:floor(n*T)+1)/n;
 gamm = gamm';
 c = c';
 
 % The below computation avoids the round off errors that can arise using floor(n*T):
-floor_nT = sum(t_grid_temp <= T) - 1;
+floor_nT = floor(n*T+eps(n*T));
 
 if floor_nT <= 0
     error('HybridExponentialScheme: Parameters must be such that floor(n*T) > 0.');
@@ -343,13 +339,14 @@ end
 MX = size(tX,2);
 MU = size(tU,2);
 
-% Adjust (if necessary) the requested time points to fit into the simulation grid.
+% Adjust (if necessary) the requested time points to fit into the simulation grid. 
+% Remark: We again use eps(...) to avoid round off errors.
 t_grid_extended = [t_grid,t_grid(end)+dt];
-idxX = sum(t_grid_extended.' <= tX,1);
+idxX = sum(t_grid_extended.' - eps(t_grid_extended.') <= tX,1);
 if isempty(tU)
     idxU = [];
 else
-    idxU = sum(t_grid_extended.' <= tU,1);
+    idxU = sum(t_grid_extended.' - eps(t_grid_extended.') <= tU,1);
 end
 tX_trunc = t_grid(idxX);
 tU_trunc = t_grid(idxU);

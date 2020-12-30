@@ -19,7 +19,7 @@ addpath(genpath(project_folder));
 T = 1;
 n = 1000;
 delta = 1/n;
-t = (delta:delta:T)';
+t = (0:1:n)'./n;
 
 % Model:
 v0 = 0.15^2;
@@ -41,7 +41,7 @@ kappa = 1;
 precision = 'single'; 
 
 % Pre-simulate the underlying Gaussians (speeds up repeated evaluation):
-M = sum((0:1:floor(n*T)+1)/n <= T); % ~ floor(n*T) + 1 (avoids round off errors)
+M = floor(n*T+eps(n*T)) + 1; % ~ floor(n*T) + 1 (avoids round off errors)
 Z = randn((M-1)*N,kappa+1,precision);
 
 % Enforce positivity of the solution:
@@ -74,7 +74,7 @@ rng(123)
                                  'returnU',true,'tX',tX,'tU',tU,'Z',Z,...
                                  'w',w,'SIGMA',SIGMA);
 
-close all;
+%close all;
 figure;
 plot(Xpaths.t,sqrt(Xpaths.values),'-');
 title('Volatility');
@@ -86,7 +86,3 @@ plot(Upaths.t,squeeze(Upaths.values),'-');
 title('U-factors');
 xlabel('t');
 ylabel('Values');
-
-
-
-
