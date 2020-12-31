@@ -1,6 +1,5 @@
 %% Initialize Script
 clear;
-serverRun = false;
 project_folder = fileparts(fileparts(matlab.desktop.editor.getActiveFilename));
 addpath(genpath(project_folder));
 
